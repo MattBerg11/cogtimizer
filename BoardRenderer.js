@@ -84,17 +84,6 @@ class BoardRenderer {
     return (row * this._columns) + column;
   }
 
-  // Validates and returns a safe icon path - prevents directory traversal
-  _getSafeIconPath(path) {
-    if (typeof path !== 'string') return 'assets/cog_blank.png';
-    // Only allow paths starting with assets/ or icons/ with valid filenames (no .. allowed)
-    // Pattern ensures no directory traversal and limited depth (max 2 levels)
-    if (/^(assets|icons)(\/[a-zA-Z0-9_\-]+){0,2}\/[a-zA-Z0-9_\-]+\.(png|jpg|jpeg|gif|webp)$/.test(path)) {
-      return path;
-    }
-    return 'assets/cog_blank.png';
-  }
-
   _render(slot) {
     let cog = slot.item;
     const col = slot.elem;
@@ -149,12 +138,12 @@ class BoardRenderer {
         div.style.backgroundImage = "";
         div.innerHTML = "";
       } else if (cog.isPlayer) {
-        div.style.backgroundImage = `url("${this._getSafeIconPath(cog.icon.path)}")`;
+        div.style.backgroundImage = `url("${getSafeIconPath(cog.icon.path)}")`;
         div.style["background-size"] = `contain`;
         div.innerHTML = "";
       }	else {
         div.style.removeProperty("background-size");
-        div.style.backgroundImage = `url("${this._getSafeIconPath(cog.icon.path)}")`;
+        div.style.backgroundImage = `url("${getSafeIconPath(cog.icon.path)}")`;
         div.innerHTML = "";
       }
     } else {

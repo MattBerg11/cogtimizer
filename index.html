@@ -8,6 +8,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
     <link rel="stylesheet" href="style.css" />
+    <script type="text/javascript" src="helpers/pathUtils.js"></script>
     <script type="text/javascript" src="Solver.js"></script>
     <script type="text/javascript" src="CogInventory.js"></script>
     <script type="text/javascript" src="BoardRenderer.js"></script>
@@ -264,24 +265,13 @@
       f.printMove = (stepNumber, board, cog1, cog2, pos1, pos2, showStats = false) => {
         const toAdd = createElem("p");
 
-        // Create a safe icon path validator - prevents directory traversal
-        const getSafeIconPath = (path) => {
-          if (typeof path !== 'string') return 'assets/cog_blank.png';
-          // Only allow paths starting with assets/ or icons/ with valid filenames (no .. allowed)
-          // Pattern ensures no directory traversal and limited depth (max 2 levels)
-          if (/^(assets|icons)(\/[a-zA-Z0-9_\-]+){0,2}\/[a-zA-Z0-9_\-]+\.(png|jpg|jpeg|gif|webp)$/.test(path)) {
-            return path;
-          }
-          return 'assets/cog_blank.png';
-        };
-
         // Build text parts separately to avoid issues with 'with' in location names
         let part1 = `Switch ${pos1.location} [${pos1.x + 1}|${pos1.y + 1}]`;
         if (showStats) {
           part1 += ` (${cog1.buildRate || 0}:${cog1.expBonus || 0}:${cog1.flaggy || 0})`;
         }
         
-        // Create first span safely
+        // Create first span safely (using shared getSafeIconPath helper)
         const span1 = createElem("span");
         span1.style.backgroundImage = `url('${getSafeIconPath(cog1.icon.path)}')`;
         
@@ -290,7 +280,7 @@
           part2 += ` (${cog2.buildRate || 0}:${cog2.expBonus || 0}:${cog2.flaggy || 0})`;
         }
         
-        // Create second span safely
+        // Create second span safely (using shared getSafeIconPath helper)
         const span2 = createElem("span");
         span2.style.backgroundImage = `url('${getSafeIconPath(cog2.icon.path)}')`;
         
