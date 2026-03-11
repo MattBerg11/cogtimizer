@@ -262,14 +262,24 @@ class CogInventory {
       } else if (c.startsWith("CogCry")) {
         icon.type = "cog";
         const parsed = c.match(/^CogCry([0-5])$/);
-        icon.path = "icons/cogs/" + "Crystal_" + Crystal_MAP[parsed[1]] + ".png";
+        if (parsed && Crystal_MAP[parsed[1]]) {
+          icon.path = "icons/cogs/" + "Crystal_" + Crystal_MAP[parsed[1]] + ".png";
+        } else {
+          icon.type = "blank";
+          icon.path = "assets/cog_blank.png";
+        }
       } else {
         icon.type = "cog";
         const parsed=c.match(/^Cog([0123YZ])(.{2,3})$/);
-        if(parsed[1] === "Z") {
-          icon.path = "icons/cogs/" + YIN_MAP[parsed[2]] + ".png";
+        if(parsed) {
+          if(parsed[1] === "Z") {
+            icon.path = "icons/cogs/" + YIN_MAP[parsed[2]] + ".png";
+          } else {
+            icon.path = "icons/cogs/" + ICON_TYPE_MAP[parsed[2]] + "_" + ICON_QUALITY_MAP[parsed[1]] + ".png";
+          }
         } else {
-          icon.path = "icons/cogs/" + ICON_TYPE_MAP[parsed[2]] + "_" + ICON_QUALITY_MAP[parsed[1]] + ".png";
+          icon.type = "blank";
+          icon.path = "assets/cog_blank.png";
         }
       }
       return icon;

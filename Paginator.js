@@ -56,9 +56,10 @@ class Paginator extends EventTarget {
 
     reset(pageCount, startPage = undefined) {
         this.pageCount = pageCount;
-        if (!startPage) {
-            startPage = Math.max(0, startPage - 1);
+        if (startPage === undefined) {
+            startPage = 0;
         }
+        startPage = Math.max(0, Math.min(startPage, pageCount - 1));
 
         this.startPage = startPage;
         this.goto(startPage);

@@ -74,14 +74,24 @@ class BoardRenderer {
   }
 
   _getIndex(row, column) {
-    if (row > this._rows) {
+    if (row < 0 || row >= this._rows) {
       throw new Error("Tried to access row outside the board");
     }
-    if (column > this._columns) {
+    if (column < 0 || column >= this._columns) {
       throw new Error("Tried to access column outside the board");
     }
 
     return (row * this._columns) + column;
+  }
+
+  // Validates and returns a safe icon path
+  _getSafeIconPath(path) {
+    if (typeof path !== 'string') return 'assets/cog_blank.png';
+    // Only allow paths starting with assets/, icons/
+    if (/^(assets|icons)\/[a-zA-Z0-9_\-\/\.]+\.(png|jpg|jpeg|gif|webp)$/.test(path)) {
+      return path;
+    }
+    return 'assets/cog_blank.png';
   }
 
   _render(slot) {
@@ -138,12 +148,12 @@ class BoardRenderer {
         div.style.backgroundImage = "";
         div.innerHTML = "";
       } else if (cog.isPlayer) {
-        div.style.backgroundImage = `url("${cog.icon.path}")`;
+        div.style.backgroundImage = `url("${this._getSafeIconPath(cog.icon.path)}")`;
         div.style["background-size"] = `contain`;
         div.innerHTML = "";
       }	else {
         div.style.removeProperty("background-size");
-        div.style.backgroundImage = `url("${cog.icon.path}")`;
+        div.style.backgroundImage = `url("${this._getSafeIconPath(cog.icon.path)}")`;
         div.innerHTML = "";
       }
     } else {
