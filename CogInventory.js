@@ -273,9 +273,22 @@ class CogInventory {
         const parsed=c.match(/^Cog([0123YZ])(.{2,3})$/);
         if(parsed) {
           if(parsed[1] === "Z") {
-            icon.path = "icons/cogs/" + YIN_MAP[parsed[2]] + ".png";
+            const yinValue = YIN_MAP[parsed[2]];
+            if (yinValue) {
+              icon.path = "icons/cogs/" + yinValue + ".png";
+            } else {
+              icon.type = "blank";
+              icon.path = "assets/cog_blank.png";
+            }
           } else {
-            icon.path = "icons/cogs/" + ICON_TYPE_MAP[parsed[2]] + "_" + ICON_QUALITY_MAP[parsed[1]] + ".png";
+            const typeValue = ICON_TYPE_MAP[parsed[2]];
+            const qualityValue = ICON_QUALITY_MAP[parsed[1]];
+            if (typeValue && qualityValue) {
+              icon.path = "icons/cogs/" + typeValue + "_" + qualityValue + ".png";
+            } else {
+              icon.type = "blank";
+              icon.path = "assets/cog_blank.png";
+            }
           }
         } else {
           icon.type = "blank";
