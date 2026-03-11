@@ -74,11 +74,11 @@ class BoardRenderer {
   }
 
   _getIndex(row, column) {
-    if (row > this._rows) {
-      throw new Error("Tried to access row outside the board");
+    if (row < 0 || row >= this._rows) {
+      throw new Error("Tried to access row outside the bounds");
     }
-    if (column > this._columns) {
-      throw new Error("Tried to access column outside the board");
+    if (column < 0 || column >= this._columns) {
+      throw new Error("Tried to access column outside the bounds");
     }
 
     return (row * this._columns) + column;
@@ -138,12 +138,12 @@ class BoardRenderer {
         div.style.backgroundImage = "";
         div.innerHTML = "";
       } else if (cog.isPlayer) {
-        div.style.backgroundImage = `url("${cog.icon.path}")`;
+        div.style.backgroundImage = `url("${getSafeIconPath(cog.icon.path)}")`;
         div.style["background-size"] = `contain`;
         div.innerHTML = "";
       }	else {
         div.style.removeProperty("background-size");
-        div.style.backgroundImage = `url("${cog.icon.path}")`;
+        div.style.backgroundImage = `url("${getSafeIconPath(cog.icon.path)}")`;
         div.innerHTML = "";
       }
     } else {

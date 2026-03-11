@@ -34,6 +34,14 @@ const YIN_MAP = {
   ["A02"]: "Yin_Bottom_Left_Cog",
   ["A03"]: "Yin_Bottom_Right_Cog"
 };
+const Crystal_MAP = {
+  ["0"]: "Topaz",
+  ["1"]: "Ruby",
+  ["2"]: "Amethyst",
+  ["3"]: "Garnet",
+  ["4"]: "Emerald",
+  ["5"]: "BlueGem"
+};
 const INV_ROWS = 8;
 const INV_COLUMNS = 12;
 const SPARE_START = 108;
@@ -158,20 +166,24 @@ class CogInventory {
     foo[1] = "Beginner"; // White
     foo[2] = "Journeyman";
     foo[3] = "Maestro";
-    foo[7] = "Warrior"; // 
+    foo[4] = "Voidwalker";
+    foo[7] = "Warrior"; //
     foo[8] = "Barbarian";
     foo[9] = "Squire";
     foo[10] = "Blood Berserker";
     foo[12] = "Divine Knight";
-    foo[19] = "Archer"; // 
+    foo[14] = "Death Bringer";
+    foo[19] = "Archer"; //
     foo[20] = "Bowman";
     foo[21] = "Hunter";
     foo[22] = "Siege Breaker";
     foo[25] = "Beast Master";
-    foo[31] = "Mage"; // 
+    foo[29] = "Wind Walker";
+    foo[31] = "Mage"; //
     foo[32] = "Wizard";
     foo[33] = "Shaman";
     foo[34] = "Elemental Sorcerer";
+    foo[40] = "Arcane Cultist";
 
     const hatIcons = {};
     const playerNames = save["playerNames"];
@@ -247,13 +259,40 @@ class CogInventory {
       } else if(c === "CogY") {
         icon.type = "cog";
         icon.path = "icons/cogs/Yang_Cog.png";
+      } else if (c.startsWith("CogCry")) {
+        icon.type = "cog";
+        const parsed = c.match(/^CogCry([0-5])$/);
+        if (parsed && Crystal_MAP[parsed[1]]) {
+          icon.path = "icons/cogs/" + "Crystal_" + Crystal_MAP[parsed[1]] + ".png";
+        } else {
+          icon.type = "blank";
+          icon.path = "assets/cog_blank.png";
+        }
       } else {
         icon.type = "cog";
         const parsed=c.match(/^Cog([0123YZ])(.{2,3})$/);
-        if(parsed[1] === "Z") {
-          icon.path = "icons/cogs/" + YIN_MAP[parsed[2]] + ".png";
+        if(parsed) {
+          if(parsed[1] === "Z") {
+            const yinValue = YIN_MAP[parsed[2]];
+            if (yinValue) {
+              icon.path = "icons/cogs/" + yinValue + ".png";
+            } else {
+              icon.type = "blank";
+              icon.path = "assets/cog_blank.png";
+            }
+          } else {
+            const typeValue = ICON_TYPE_MAP[parsed[2]];
+            const qualityValue = ICON_QUALITY_MAP[parsed[1]];
+            if (typeValue && qualityValue) {
+              icon.path = "icons/cogs/" + typeValue + "_" + qualityValue + ".png";
+            } else {
+              icon.type = "blank";
+              icon.path = "assets/cog_blank.png";
+            }
+          }
         } else {
-          icon.path = "icons/cogs/" + ICON_TYPE_MAP[parsed[2]] + "_" + ICON_QUALITY_MAP[parsed[1]] + ".png";
+          icon.type = "blank";
+          icon.path = "assets/cog_blank.png";
         }
       }
       return icon;
@@ -370,7 +409,7 @@ class CogInventory {
             boosted.push([k, j]);
           }
           break;
-        case "corner":
+        case "corners":
           boosted.push([i-2, j-2],[i-2, j+2],[i+2, j-2],[i+2, j+2]);
           break;
         case "around":

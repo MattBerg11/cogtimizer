@@ -8,6 +8,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
     <link rel="stylesheet" href="style.css" />
+    <script type="text/javascript" src="helpers/pathUtils.js"></script>
     <script type="text/javascript" src="Solver.js"></script>
     <script type="text/javascript" src="CogInventory.js"></script>
     <script type="text/javascript" src="BoardRenderer.js"></script>
@@ -264,18 +265,30 @@
       f.printMove = (stepNumber, board, cog1, cog2, pos1, pos2, showStats = false) => {
         const toAdd = createElem("p");
 
-        let text = `Switch ${pos1.location} \
-        [${pos1.x + 1}|${pos1.y + 1}]`;
+        // Build text parts separately to avoid issues with 'with' in location names
+        let part1 = `Switch ${pos1.location} [${pos1.x + 1}|${pos1.y + 1}]`;
         if (showStats) {
-          text += ` (${cog1.buildRate || 0}:${cog1.expBonus || 0}:${cog1.flaggy || 0})`;
+          part1 += ` (${cog1.buildRate || 0}:${cog1.expBonus || 0}:${cog1.flaggy || 0})`;
         }
-        text += ` <span style="background-image: url('${cog1.icon.path}')"></span> with ${pos2.location} [${pos2.x + 1}|${pos2.y + 1}]`;
+        
+        // Create first span safely (using shared getSafeIconPath helper)
+        const span1 = createElem("span");
+        span1.style.backgroundImage = `url('${getSafeIconPath(cog1.icon.path)}')`;
+        
+        let part2 = `${pos2.location} [${pos2.x + 1}|${pos2.y + 1}]`;
         if (showStats) {
-          text += ` (${cog2.buildRate || 0}:${cog2.expBonus || 0}:${cog2.flaggy || 0})`;
+          part2 += ` (${cog2.buildRate || 0}:${cog2.expBonus || 0}:${cog2.flaggy || 0})`;
         }
-        text += ` <span style="background-image: url('${cog2.icon.path}')"></span>`;
-
-        toAdd.innerHTML = text;
+        
+        // Create second span safely (using shared getSafeIconPath helper)
+        const span2 = createElem("span");
+        span2.style.backgroundImage = `url('${getSafeIconPath(cog2.icon.path)}')`;
+        
+        // Build DOM safely using explicit parts (no splitting required)
+        toAdd.appendChild(document.createTextNode(part1 + ' '));
+        toAdd.appendChild(span1);
+        toAdd.appendChild(document.createTextNode(' with ' + part2 + ' '));
+        toAdd.appendChild(span2);
 
         toAdd.onclick = () => {
           stepsPage.goto(stepNumber);
@@ -338,9 +351,15 @@
       function mmoifyNumber(num, addSign = true) {
         let str = num;
 
-        if (Math.abs(num) >= 1000000) {
-          str = (Math.ceil(num / 10000) / 100) + "M";
-        } else if (Math.abs(num) >= 1000) {
+        const abs = Math.abs(num);
+
+        if (abs >= 1_000_000_000_000) {
+          str = (Math.ceil(num / 10_000_000_000) / 100) + "T";
+        } else if (abs >= 1_000_000_000) {
+          str = (Math.ceil(num / 10_000_000) / 100) + "B";
+        } else if (abs >= 1_000_000) {
+          str = (Math.ceil(num / 10_000) / 100) + "M";
+        } else if (abs >= 1000) {
           str = (Math.ceil(num / 10) / 100) + "K";
         }
 
@@ -388,17 +407,30 @@
       function fetchAndLoadConfig(username) {
         console.log("Trying to fetch", username);
         if (username.length > 0) {
-          const headers = {
-            "Content-Type": "text/json",
-            method: "GET"
-          };
-          fetch(`https://cdn.idleonefficiency.com/profiles/${username.toLowerCase()}.json`, headers)
+          // Validate username format (alphanumeric only)
+          if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            console.warn("Invalid username format");
+            return;
+          }
+          fetch(`https://cdn.idleonefficiency.com/profiles/${username.toLowerCase()}.json`, {
+            method: "GET",
+            headers: {
+              "Accept": "application/json"
+            }
+          })
           .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Failed to load profile: HTTP ${response.status}`);
+            }
             return response.json();
           }).then((json) => {
+            // Validate required fields exist
+            if (!json || typeof json !== 'object') {
+              throw new Error("Invalid profile data received");
+            }
             load(json);
           }).catch((reason) => {
-            console.log(reason);
+            console.error("Failed to load profile:", reason);
           });
         }
       }
