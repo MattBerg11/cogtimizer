@@ -264,40 +264,40 @@
       f.printMove = (stepNumber, board, cog1, cog2, pos1, pos2, showStats = false) => {
         const toAdd = createElem("p");
 
-        // Create a safe icon path validator
+        // Create a safe icon path validator - prevents directory traversal
         const getSafeIconPath = (path) => {
           if (typeof path !== 'string') return 'assets/cog_blank.png';
-          // Only allow paths starting with assets/, icons/, or data:image
-          if (/^(assets|icons)\/[a-zA-Z0-9_\-\/\.]+\.(png|jpg|jpeg|gif|webp)$/.test(path)) {
+          // Only allow paths starting with assets/ or icons/ with valid filenames (no .. allowed)
+          // Pattern ensures no directory traversal and limited depth (max 2 levels)
+          if (/^(assets|icons)(\/[a-zA-Z0-9_\-]+){0,2}\/[a-zA-Z0-9_\-]+\.(png|jpg|jpeg|gif|webp)$/.test(path)) {
             return path;
           }
           return 'assets/cog_blank.png';
         };
 
-        // Build text content safely
-        let textContent = `Switch ${pos1.location} [${pos1.x + 1}|${pos1.y + 1}]`;
+        // Build text parts separately to avoid issues with 'with' in location names
+        let part1 = `Switch ${pos1.location} [${pos1.x + 1}|${pos1.y + 1}]`;
         if (showStats) {
-          textContent += ` (${cog1.buildRate || 0}:${cog1.expBonus || 0}:${cog1.flaggy || 0})`;
+          part1 += ` (${cog1.buildRate || 0}:${cog1.expBonus || 0}:${cog1.flaggy || 0})`;
         }
         
         // Create first span safely
         const span1 = createElem("span");
         span1.style.backgroundImage = `url('${getSafeIconPath(cog1.icon.path)}')`;
         
-        textContent += ` with ${pos2.location} [${pos2.x + 1}|${pos2.y + 1}]`;
+        let part2 = `${pos2.location} [${pos2.x + 1}|${pos2.y + 1}]`;
         if (showStats) {
-          textContent += ` (${cog2.buildRate || 0}:${cog2.expBonus || 0}:${cog2.flaggy || 0})`;
+          part2 += ` (${cog2.buildRate || 0}:${cog2.expBonus || 0}:${cog2.flaggy || 0})`;
         }
         
         // Create second span safely
         const span2 = createElem("span");
         span2.style.backgroundImage = `url('${getSafeIconPath(cog2.icon.path)}')`;
         
-        // Build DOM safely (no innerHTML with user data)
-        const parts = textContent.split(' with ');
-        toAdd.appendChild(document.createTextNode(parts[0] + ' '));
+        // Build DOM safely using explicit parts (no splitting required)
+        toAdd.appendChild(document.createTextNode(part1 + ' '));
         toAdd.appendChild(span1);
-        toAdd.appendChild(document.createTextNode(' with ' + parts[1] + ' '));
+        toAdd.appendChild(document.createTextNode(' with ' + part2 + ' '));
         toAdd.appendChild(span2);
 
         toAdd.onclick = () => {
